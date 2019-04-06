@@ -1,3 +1,4 @@
+// Surface computes an SVG rendering of a 3-D surface function.
 package main
 
 import (
@@ -8,15 +9,16 @@ import (
 )
 
 const (
-	width, height = 600, 450 //
-	cells         = 100
-	xyrange       = 100.0
-	xyscale       = width / 2 / xyrange
-	zscale        = 0.4 * height
-	scale         = 30
-	angle         = math.Pi / 6
+	width, height = 600, 450            //height and width of the canvas
+	cells         = 100                 //size of grid
+	xyrange       = 100.0               // range of axes
+	xyscale       = width / 2 / xyrange //The width of the unit coordinates on the canvas
+	zscale        = 0.4 * height        //The height of the unit coordinates on the canvas
+	scale         = 30                  //custom zoom factor
+	angle         = math.Pi / 6         //30°
 )
 
+// corner returns x and y of canvas
 func corner(i, j int) (float64, float64) {
 	x := (float64(i)/cells - 0.5) * xyrange
 	y := (float64(j)/cells - 0.5) * xyrange
@@ -26,6 +28,8 @@ func corner(i, j int) (float64, float64) {
 	sy := (x+y)*math.Sin(angle)*xyscale - zscale*z + height/2
 	return sx, sy
 }
+
+// corner returns x and y of canvas. ideas such as resove.md
 func corner1(i, j int) (float64, float64) {
 	x := float64(i) - cells/2
 	y := float64(j) - cells/2
@@ -39,6 +43,7 @@ func corner1(i, j int) (float64, float64) {
 	return dx, dy
 }
 
+// heightZ return z of axes
 func heightZ(x, y float64) float64 {
 	r := math.Hypot(x, y)
 	return math.Sin(r) / r
