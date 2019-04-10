@@ -66,6 +66,7 @@ func main() {
 			cx, cy, err := corner1(i, j+1)
 			dx, dy, err := corner1(i+1, j+1)
 			if err != nil {
+				fmt.Println("err:", err)
 				continue
 			}
 			svgStr += fmt.Sprintf("<polygon points='%g,%g %g,%g %g,%g %g,%g' />\n", ax, ay, bx, by, cx, cy, dx, dy)

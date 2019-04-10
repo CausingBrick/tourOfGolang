@@ -18,6 +18,7 @@ const (
 	angle         = math.Pi / 6         //30°
 )
 
+// TODO Need to study and understand this algorithm
 // corner returns x and y of canvas
 func corner(i, j int) (float64, float64) {
 	x := (float64(i)/cells - 0.5) * xyrange
