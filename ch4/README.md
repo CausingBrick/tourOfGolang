@@ -242,7 +242,131 @@
 
      适用于简单声明, 可读性差.
 
-   * 
+   * 通过指定部分或全部成员变量的名称和值来初始化结构体变量.
+   
+2. 处于效率考虑, 结构体作为参数传递的时候通常传递结构体指针,因为go为值传递,直接 传递会消耗效率和内存.
 
-## 4.5 JSON
 
+
+### 4.4.2 结构体字面量
+
+* 若结构体的成员变量都可比较,则这个结构体为可比较的.
+
+* 可比较的结构体类型都可以作为map的键类型.
+
+  ```go
+  type user strcut{
+  	name string
+      age int
+  }
+  
+  student := make(map[user]int)
+  ```
+
+
+
+### 4.4.2 结构体字面量
+
+1. go允许定义不带名称的结构体成员 只要指定类型即可. 该结构体成员叫做`匿名成员`.
+2. 通过结构体字面量来初始化j结构体的时候,必须遵循结构体成员顺序和类型来初始化.
+
+## 4.5 `JSON`
+
+1. `javascript object notaition `是一种发送和接收格式化信息的标准.为js的Unicode编码,包括字符串,数字,布尔值,数组和对象.
+
+2. JSON对象是从一个字符串到值的映射.和map类型类似写成name: value的形式.元素使用逗号分格,两边使用花括号括起来.
+
+3. Go对Json,xml,ASN格式有良好的支持.标准库`encoding/json`对JSON格式的解码编码做了良好的支持.对其他格式也有类似的API.
+
+   * 把Go的数据结构转换为JSON成为marshal.通过json.Marshal实现.
+   * 相反的json转换为Go的数据类型用json.Unmarshal实现.解析时先定义需要取的数据结构,根据定义的数据结构去从json字符串中匹配.
+
+4. 结构体标签
+
+   ```go
+   type Move struct {
+       Title	string
+       Year	int	`json: "released"`
+       Color	bool `json: "color,omitempty"`
+   } 
+   ```
+
+   在上面的Year 和color字段中.将该结构体转化为json字段后,字段不是Year而是released,Color转为color.就是通过上面的结构体标签实现的.是在编译期决定的.
+
+   * 成员标签定义可以为任意字符串. 按照习惯,用一串由空格分开的标签键值对 `key: "value"` .
+   * 因为标签的值使用双括号括起来, 所以一般标签都是原生的字符串字面量.
+   * 标签的第一部分指定了go结构体成员对应JSON中字段的名字. *比如user_name对应Go结构体的`UserName`*. 额外的选项比如`Color`标签中的emitempty,表示该成员的值为零或空时,则不输出该成员到JSON中.
+
+   
+
+##  4.6 文本和HTML模板
+
+在进行简单输出格式化的时候,可以使用`prinf()`函数.但是多数情况下会很复杂,Go提供了`text/template`和`html/template`包来实现高级格式化操作.提供了可以将程序的变量值代入到文本或者HTML模板中的机制.
+
+1. 模板是一个字符串或者文件.其中包含一个或以上的用双大括号包围的单元`{{...}}`, 这个单元称为操作.
+
+2. 操作在模板语言里都对应一个表达式, 比如: `输出值,选择结构体成员, 调用函数和方法, 描述控制逻辑(if-else .etc), 实例化别的模板 `.
+
+   * 在操作中, 符号`|`会将前一个操作的结果当做下一个操作的输入,和UNIX的shell管道类似.比如:
+
+     ```go
+     {{.Title| printf "%.64s"}}
+     ```
+
+     printf()为内置函数, 也可以定义函数.
+
+3. 通过模板输出结果需要两个步骤:
+
+   1. 解析模板并转换为内部的表示方法.
+   2. 在制定的输入上执行.
+
+4. 以下是一个文本模板的例子.
+
+   ```go
+   //声明一个模板字符串
+   const templ = `{{.TotalCount}} issues:
+   {{range .Items}}----------------------------------------
+   Number: {{.Number}}
+   User:   {{.User.Login}}
+   Title:  {{.Title | printf "%.64s"}}
+   Age:    {{.CreatedAt | daysAgo}} days
+   {{end}}`
+   
+   //!+daysAgo 声明函数
+   func daysAgo(t time.Time) int {
+   	return int(time.Since(t).Hours() / 24)
+   }
+   
+   //!+parse 模板解析
+   //先返回一个模板实例
+   report, err := template.New("report").
+   //向模板函数注入自定义函数
+   Funcs(template.FuncMap{"daysAgo": daysAgo}).
+   //解析模板
+   Parse(templ)
+   if err != nil {
+       log.Fatal(err)
+   }
+   ```
+
+5. 模板在编译期间固定下来,因此无法将严重错误保存下来.帮助函数`template.Must()`可以接受一个模板和一个`error`(或者`panic`)返回一个模板.这样编译期间模板发生可以通过,转换为运行时的`painc`.
+
+   ```go
+   //!+exec
+   var report = template.Must(template.New("issuelist").
+   	Funcs(template.FuncMap{"daysAgo": daysAgo}).
+   	Parse(templ))
+   
+   func main() {
+   	result, err := github.SearchIssues(os.Args[1:])
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	if err := report.Execute(os.Stdout, result); err != nil {
+   		log.Fatal(err)
+   	}
+   }
+   
+   ```
+
+   

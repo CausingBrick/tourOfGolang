@@ -17,13 +17,6 @@ func eliminate(x []string) {
 }
 
 func main() {
-	// var x []string
-	// for _, v := range "11111111112223333444555666777888999" {
-	// 	x = append(x, string(v))
-	// }
-	// fmt.Println(x)
-	// eliminate(x)
-	// fmt.Println(x)
 	ages := map[string]int{}
 	if age, ok := ages["nick"]; !ok { /* ... */
 		println(age, ok)
