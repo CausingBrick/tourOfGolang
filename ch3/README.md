@@ -51,7 +51,7 @@ golang数据类型广泛,向下匹配硬件,向上满足高级编程所需.
 
 * go 支持两种大小的复数,`complex64`与`complex128`,分别由float32,float64组成.
 * 内置的complex函数根据实部与虚部创建复数,real函数和imag函数分别提取复数的实部和虚部;
-   ```
+   ```go
    var x = complex128(1,3)  //1 + 3i
    fmt.println(real(x))     //1
    fmt.println(imag(y))     //3
