@@ -174,6 +174,64 @@
 
 ### 5.6 警告：捕获迭代变量
 
+给出下面删除文件夹的例子
+
+```go
+var rmdirs []func()
+//temp
+for _, d := range tempDirs{
+    dir := d
+    os.MkdirAll(dir,0777)	//creats parent directories too
+    rmdirs = append(rmdirs, func(){
+        os.RemoveAll(dir)
+    })
+}
+```
+
+在range内部里的`dir := d`这行不能缺少, 若缺少掉直接对d进行操作, 则删除的时候只会删除最后一个文件路径.如下分析: dir为range这个词法块创建的局部变量, 内部共享该变量, 而对于函数值而言, 里面存的是变量的指针而不是变量的值, 故循环结束之后, 函数值里面的dir都是同一个指针, 指向最后一次遍历的值.当后续执行rmdir里面的函数时, 都是同一个值.
+
+```go
+var rmdirs []func()
+
+for _, dir := range tempDirs{
+    os.MkdirAll(dir,0777)	//creats parent directories too
+    rmdirs = append(rmdirs, func(){
+        os.RemoveAll(dir)
+    })
+}
+```
+
+再比如:
+
+```go
+var any []func()
+
+for i := 0; i < 3; i++ {
+    d := i
+    any = append(any, func() {
+        println(d)
+    })
+}
+for _, v := range any {
+    v()//0, 1, 2
+}
+```
+
+若不使用d暂存则
+
+```go
+var any []func()
+
+for i := 0; i < 3; i++ {
+    any = append(any, func() {
+        println(i)
+    })
+}
+for _, v := range any {
+    v()//2, 2, 2
+}
+```
+
 
 
 ## 5.7 可变参数
