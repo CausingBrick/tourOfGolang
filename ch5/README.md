@@ -1,4 +1,4 @@
-[TOC]
+
 
 # 函数
 
@@ -172,7 +172,7 @@
    ```
    squares返回一个匿名函数, 其中x为闭包,这个例子还说明, 函数值f会保存状态.
 
-### 5.6 警告：捕获迭代变量
+#### 5.6.1警告：捕获迭代变量
 
 给出下面删除文件夹的例子
 
@@ -236,15 +236,89 @@ for _, v := range any {
 
 ## 5.7 可变参数
 
+对于函数传递参数时,可以提供可变的参数个数, 在参数列表最后的类型名称之前使用省略号`...`表示可变参数, 表示可以传递该类型任意数目的参数.
+
+```go
+func sum(vals ...int) int {
+    total := 0
+    for _,val := range vals {
+        total += val
+    }
+    return tatal
+}
+```
+
+调用时显示申请一个数, 将参数复制到数组并将这个数组slice传递到函数.
+
+若已经是一个slice在最后一个参数后面放一个省略号即可
+
+```go
+values := []int{1, 2, 3, 4}
+fmt.Println(sum(values...))
+```
+
+**虽然`...int`像函数体内slice, 但是并不是同一种类型**
+
+## 5.8 `deffer`语句
+
+- deffer语句是go里用来处理延时函数的语句, 放在deffer语句后面的语句, 会在最后函数结束返回时被执行(无论函数是否正常返回),类似于栈机制, 每个次deffer后面的语句都被压入栈, 最后返回时从栈顶取出内容并执行.
+
+- 语法
+
+  > deffer 函数(或者方法调用)
+
+- deffer语句常用于成对的操作, 比如打开关闭, 连接和断开, 加锁解锁.又因为延迟函数的执行在return语句之后, 故可以从deffer后面的语句修改函数的返回值(利用匿名函数可以访问其外层函数作用域的特点).
 
 
-## 5.8 `Deferred`函数
 
+## 5.9  `Panic`宕机
 
+- go 类型系统会在编译器很多错误, 但有些错误需要在运行时检查, 当检测到这种错误时就是panic异常, 即宕机.如slice越界, 空指针引用.
 
-## 5.9  `Panic`异常
+- 运行过程: 一般而言, 宕机会使程序执行终止, 并且`goroutine`中的延迟函数被执行(deffer机制), 然后程序异常退出并且留下日志信息.其中日志信息包括宕机的值, 其中包含了函数的栈跟踪信息, 可以借助这条信息来诊断信问题的原因,.
 
+- panic可以在调用内置的panic函数是发生.当逻辑碰到不能发生的状况时, 宕机是最好的处理方式, 但是会导致程序异常退出, 故只有在严重错误时才会使用panic
 
+- [Golang panic用法](https://www.cnblogs.com/liuzhongchao/p/10112739.html)
+
+  Go语言追求简洁优雅，所以，Go语言不支持传统的 try…catch…finally 这种异常，因为Go语言的设计者们认为，将异常与控制结构混在一起会很容易使得代码变得混乱。因为开发者很容易滥用异常，甚至一个小小的错误都抛出一个异常。在Go语言中，使用多值返回来返回错误。不要用异常代替错误，更不要用来控制流程。在极个别的情况下，也就是说，遇到真正的异常的情况下（比如除数为 0了）。才使用Go中引入的Exception处理：defer, panic, recover。
+
+  这几个异常的使用场景可以这么简单描述：Go中可以抛出一个panic的异常，然后在defer中通过recover捕获这个异常，然后正常处理。
+
+  [![复制代码](README.assets/copycode.gif)](javascript:void(0);)
+
+  ```go
+  package main
+  
+  import "fmt"
+  
+  func main(){
+  
+      defer func(){ // 必须要先声明defer，否则不能捕获到panic异常
+          fmt.Println("c")
+          if err:=recover();err!=nil{
+              fmt.Println(err) // 这里的err其实就是panic传入的内容，55
+          }
+          fmt.Println("d")
+      }()
+  
+      f()
+  }
+  
+  func f(){
+      fmt.Println("a")
+      panic(55)
+      fmt.Println("b")
+      fmt.Println("f")
+  }
+  
+  输出结果：
+  a
+  c
+  55
+  d
+  exit code 0, process exited normally.
+  ```
 
 ## 5.10 `Recover`捕获异常
 
